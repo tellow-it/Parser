@@ -135,12 +135,12 @@ def settings_and_start():
     # options.add_argument("start-maximized")
 
     # options.add_argument("--headless")
-
+    # option.add_argument("--no-sandbox")
     option.add_experimental_option("excludeSwitches", ["enable-automation"])
     option.add_experimental_option('useAutomationExtension', False)
     ser = Service("C:\\Users\\mrtik\\PycharmProjects\\testOpencv\\chromedriver\\chromedriver.exe")
-    # option.add_argument('headless')
     option.add_argument('--disable-blink-features=AutomationControlled')
+    # option.add_argument("/home/tellowit/home/initpro/chromedriver")
     # option.add_argument(r'--user-data-dir=C:\Users\mrtik\AppData\Local\Google\Chrome\User Data\Default')
     browser = webdriver.Chrome(options=option, service=ser)
 
@@ -182,41 +182,30 @@ def solving_captcha(data_input, fpd_input, kkt_input):
         browser.switch_to.frame(iframe)
         act = browser.find_element(by=By.CSS_SELECTOR, value='.recaptcha-checkbox-border')
         act.click()  # click to field
-        print(act)
+        delay()
         browser.switch_to.default_content()
-        iframe = browser.find_element(by=By.XPATH, value="/html/body/div[25]/div[4]/iframe")
-        browser.switch_to.frame(iframe)
-        print(iframe)
-        time.sleep(5)
-        try:
-            print(1)
-            element = WebDriverWait(browser, 5).until(
-                EC.presence_of_element_located((By.XPATH, '//*[@id="recaptcha-audio-button"]'))
-            )
-            # act = browser.find_element(by=By.XPATH, value='//*[@id="recaptcha-audio-button"]')
-            act = browser.execute_script("""
-                (function() {
-                    document.querySelector("#recaptcha-audio-button").click();
-                })()""")
-        except Exception as e:
+        all_frames = browser.find_elements(by=By.TAG_NAME, value='iframe')
+        print(all_frames)
+        print(f'Len: {len(all_frames)}')
+        # browser.switch_to.frame(all_frames[3])
+        k = 0
+        for i in range(0, len(all_frames), 1):
             try:
-                print(2)
-                act = browser.find_element(by=By.XPATH, value='//*[@id="recaptcha-audio-button"]')
-                act.click()
-            except Exception as e:
-                print(3)
-                act = browser.find_element(by=By.CSS_SELECTOR, value='rc-button goog-inline-block rc-button-audio')
-                act.click()
-
+                browser.switch_to.default_content()
+                browser.switch_to.frame(all_frames[i])
+                print(f'Iteration: {i}')
+                browser.find_element(by=By.ID, value='recaptcha-audio-button').click()
+                k = i
+            except:
+                print(f'Incorrect frame click to audio: ID-{i}')
+        print(f'CORRECT FRAME click to audio: ID-{k}')
 
         delay()
-        # act.click()
 
         # switch do audio frame
-
         browser.switch_to.default_content()
-        iframe = browser.find_element(by=By.XPATH, value='/html/body/div[25]/div[4]/iframe')
-        browser.switch_to.frame(iframe)
+        all_frames = browser.find_elements(by=By.TAG_NAME, value='iframe')
+        browser.switch_to.frame(all_frames[k])
         delay()
 
         try:
@@ -283,11 +272,6 @@ def filling_out_form(data_input, fpd_input, kkt_input):
         solving_captcha(data_input, fpd_input, kkt_input)
     except Exception as e:
         print('Problems with filling out form or solving captcha')
-        # browser.refresh()
-        # delay()
-        # print('REFRESH')
-        # filling_out_form(data_input, fpd_input, kkt_input)
-        # print(e)
 
 
 def collect_information(data_input, fpd_input, kkt_input):
@@ -393,7 +377,6 @@ def collect_information(data_input, fpd_input, kkt_input):
         print('place_settlement : ', place_settlement)
 
         print(info_of_check)
-
 
         return info_of_check
     except Exception as e:
